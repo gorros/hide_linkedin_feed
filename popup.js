@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     chrome.storage.sync.set({ autoRedirectJobs: jobsToggle.checked });
     if (jobsToggle.checked) {
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        if (tabs[0].url.startsWith('https://www.linkedin.com/')) {
+        if (tabs[0].url.startsWith('https://www.linkedin.com/') && !tabs[0].url.startsWith('https://www.linkedin.com/jobs/')) {
           chrome.tabs.update(tabs[0].id, { url: 'https://www.linkedin.com/jobs/' });
         }
       });

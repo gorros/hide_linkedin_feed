@@ -1,6 +1,4 @@
-let isHidden = true;
-
-function toggleLinkedInFeed(forceHide = null) {
+function toggleFeed(hidden) {
   const selectors = [
     '.core-rail',
     '.feed-follows-module',
@@ -8,67 +6,58 @@ function toggleLinkedInFeed(forceHide = null) {
     '.update-components-actor',
     '.scaffold-finite-scroll__content'
   ];
-
-  if (forceHide !== null) {
-    isHidden = forceHide;
-  }
-
+  
+  const rightRail = document.querySelector('.right-rail');
+  const contentMain = document.querySelector('.scaffold-layout__content main');
+  
   selectors.forEach(selector => {
     const elements = document.querySelectorAll(selector);
     elements.forEach(element => {
-      element.style.display = isHidden ? 'none' : '';
+      element.style.display = hidden ? 'none' : '';
     });
   });
+  
+  if (rightRail) {
+    rightRail.style.display = hidden ? 'none' : '';
+  }
+  
+  if (contentMain) {
+    contentMain.style.width = hidden ? '100%' : '';
+    contentMain.style.margin = hidden ? '0 auto' : '';
+    contentMain.style.maxWidth = hidden ? '1128px' : '';
+  }
 }
 
-function observeChanges() {
-  const targetNode = document.body;
-  const config = { childList: true, subtree: true };
-  const observer = new MutationObserver((mutationsList, observer) => {
-    for (let mutation of mutationsList) {
-      if (mutation.type === 'childList' && isHidden) {
-        toggleLinkedInFeed();
-      }
+// Apply saved state on page load and observe for changes
+function applyFeedState() {
+  chrome.storage.sync.get('feedHidden', (data) => {
+    if (window.location.href.startsWith('https://www.linkedin.com/feed/')) {
+      toggleFeed(data.feedHidden);
     }
   });
-  observer.observe(targetNode, config);
 }
 
-// Load initial state
-chrome.storage.sync.get('isHidden', function(data) {
-  isHidden = data.isHidden !== false;
-  toggleLinkedInFeed();
-  observeChanges();
-});
-
-// Listen for toggle message from popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "toggle") {
-    toggleLinkedInFeed(request.isHidden);
+// Create a MutationObserver to watch for changes in the DOM
+const observer = new MutationObserver((mutations) => {
+  for (let mutation of mutations) {
+    if (mutation.type === 'childList') {
+      applyFeedState();
+      break;
+    }
   }
 });
 
-// Periodically check and hide (as a fallback)
-setInterval(() => {
-  if (isHidden) {
-    toggleLinkedInFeed();
-  }
-}, 1000);
+// Start observing the document with the configured parameters
+observer.observe(document.body, { childList: true, subtree: true });
 
-function toggleFeed(hidden) {
-  const feed = document.querySelector('.core-rail');
-  if (feed) {
-    feed.style.display = hidden ? 'none' : 'block';
-  }
-}
+// Initial application of feed state
+applyFeedState();
 
+// Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'toggleFeed') {
-    toggleFeed(request.hidden);
+    if (window.location.href.startsWith('https://www.linkedin.com/feed/')) {
+      toggleFeed(request.hidden);
+    }
   }
-});
-
-// Apply saved state on page load
-chrome.storage.sync.get('feedHidden', (data) => {
-  toggleFeed(data.feedHidden);
 });
