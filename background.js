@@ -43,3 +43,14 @@ chrome.runtime.onInstalled.addListener(function() {
     updateIcon(data.isHidden !== false);
   });
 });
+
+// Add tab update listener for auto-redirect feature
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url.startsWith('https://www.linkedin.com/')) {
+    chrome.storage.sync.get('autoRedirectJobs', (data) => {
+      if (data.autoRedirectJobs && !tab.url.startsWith('https://www.linkedin.com/jobs/')) {
+        chrome.tabs.update(tabId, { url: 'https://www.linkedin.com/jobs/' });
+      }
+    });
+  }
+});

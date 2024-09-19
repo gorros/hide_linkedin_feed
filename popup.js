@@ -1,35 +1,30 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const toggleButton = document.getElementById('toggleButton');
-  const label = document.querySelector('.label');
+  const feedToggle = document.getElementById('feedToggle');
+  const jobsToggle = document.getElementById('jobsToggle');
 
-  // Load saved state
-  chrome.storage.sync.get('isHidden', function(data) {
-    const isHidden = data.isHidden !== false;
-    toggleButton.checked = isHidden;
-    updateUI(isHidden);
-    chrome.runtime.sendMessage({action: "updateIcon", isHidden: isHidden});
+  // Load saved states
+  chrome.storage.sync.get(['feedHidden', 'autoRedirectJobs'], (data) => {
+    feedToggle.checked = data.feedHidden || false;
+    jobsToggle.checked = data.autoRedirectJobs || false;
   });
 
-  toggleButton.addEventListener('change', function() {
-    const isHidden = toggleButton.checked;
-    
-    // Save state
-    chrome.storage.sync.set({isHidden: isHidden}, function() {
-      // Update UI
-      updateUI(isHidden);
-
-      // Send message to content script
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {action: "toggle", isHidden: isHidden});
-      });
-
-      // Update icon
-      chrome.runtime.sendMessage({action: "updateIcon", isHidden: isHidden});
+  // Save feed toggle state on change
+  feedToggle.addEventListener('change', () => {
+    chrome.storage.sync.set({ feedHidden: feedToggle.checked });
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'toggleFeed', hidden: feedToggle.checked });
     });
   });
-});
 
-function updateUI(isHidden) {
-  document.body.style.backgroundColor = isHidden ? '#e6f3ff' : '#ffffff'; // Light blue when on, white when off
-  document.querySelector('.label').textContent = isHidden ? 'Feed Hidden' : 'Feed Visible';
-}
+  // Save jobs toggle state on change
+  jobsToggle.addEventListener('change', () => {
+    chrome.storage.sync.set({ autoRedirectJobs: jobsToggle.checked });
+    if (jobsToggle.checked) {
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs[0].url.startsWith('https://www.linkedin.com/')) {
+          chrome.tabs.update(tabs[0].id, { url: 'https://www.linkedin.com/jobs/' });
+        }
+      });
+    }
+  });
+});

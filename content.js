@@ -54,3 +54,21 @@ setInterval(() => {
     toggleLinkedInFeed();
   }
 }, 1000);
+
+function toggleFeed(hidden) {
+  const feed = document.querySelector('.core-rail');
+  if (feed) {
+    feed.style.display = hidden ? 'none' : 'block';
+  }
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'toggleFeed') {
+    toggleFeed(request.hidden);
+  }
+});
+
+// Apply saved state on page load
+chrome.storage.sync.get('feedHidden', (data) => {
+  toggleFeed(data.feedHidden);
+});

@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>LinkedIn Feed Hider</title>
   <style>
     body {
       width: 200px;
       padding: 10px;
       font-family: Arial, sans-serif;
-      transition: background-color 0.3s;
     }
-    h2 {
-      margin-top: 0;
-      margin-bottom: 10px;
+    h1 {
+      font-size: 18px;
+      margin-bottom: 15px;
     }
     .toggle-container {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      margin-bottom: 10px;
     }
     .switch {
       position: relative;
@@ -37,7 +37,7 @@
       bottom: 0;
       background-color: #ccc;
       transition: .4s;
-      border-radius: 20px;
+      border-radius: 34px;
     }
     .slider:before {
       position: absolute;
@@ -56,19 +56,26 @@
     input:checked + .slider:before {
       transform: translateX(20px);
     }
-    .label {
-      font-weight: bold;
+    .toggle-label {
+      margin-left: 10px;
     }
   </style>
 </head>
 <body>
-  <h2>LinkedIn Feed Hider</h2>
+  <h1>LinkedIn Feed Hider</h1>
   <div class="toggle-container">
-    <span class="label">Feed Visible</span>
     <label class="switch">
-      <input type="checkbox" id="toggleButton">
+      <input type="checkbox" id="feedToggle">
       <span class="slider"></span>
     </label>
+    <span class="toggle-label">Feed Hidden</span>
+  </div>
+  <div class="toggle-container">
+    <label class="switch">
+      <input type="checkbox" id="jobsToggle">
+      <span class="slider"></span>
+    </label>
+    <span class="toggle-label">Auto-redirect to Jobs</span>
   </div>
   <script src="popup.js"></script>
 </body>

@@ -2,10 +2,11 @@
   "manifest_version": 2,
   "name": "LinkedIn Feed Hider",
   "version": "1.0",
-  "description": "Toggles the LinkedIn feed visibility",
+  "description": "Toggles the LinkedIn feed visibility and provides quick access to Jobs",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "browser_action": {
     "default_popup": "popup.html"
